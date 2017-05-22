@@ -1,0 +1,8 @@
+- name: download ES
+  get_url: url=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ es_version }}.tar.gz dest=/tmp/elasticsearch-{{ es_version }}.tar.gz
+
+- name: unpack ES
+  unarchive: remote_src=True src=/tmp/elasticsearch-{{ es_version }}.tar.gz dest=/opt
+
+- name: create a symlink
+  file: src=/opt/elasticsearch-{{ es_version }} dest=/opt/elasticsearch state=link
