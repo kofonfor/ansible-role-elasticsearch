@@ -1,0 +1,15 @@
+[Unit]
+Description=Elasticsearch Service
+Documentation=https://elastic.co
+
+[Service]
+LimitNOFILE=512000
+LimitMEMLOCK=infinity
+User={{ es_user }}
+Group={{ es_user }}
+ExecStart=/opt/elasticsearch/bin/elasticsearch
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

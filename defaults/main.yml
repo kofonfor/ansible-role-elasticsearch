@@ -1,1 +1,5 @@
 es_version: 5.4.0
+es_path_logs: /var/log/elasticsearch
+es_path_data: /var/lib/elasticsearch
+es_group_name: elasticsearch
+es_user: elasticsearch

@@ -2,7 +2,39 @@
   get_url: url=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ es_version }}.tar.gz dest=/tmp/elasticsearch-{{ es_version }}.tar.gz
 
 - name: unpack ES
-  unarchive: remote_src=True src=/tmp/elasticsearch-{{ es_version }}.tar.gz dest=/opt
+  unarchive: remote_src=True src=/tmp/elasticsearch-{{ es_version }}.tar.gz dest=/opt creates=/opt/elasticsearch-{{ es_version }}
 
 - name: create a symlink
   file: src=/opt/elasticsearch-{{ es_version }} dest=/opt/elasticsearch state=link
+
+- name: put a config file
+  template: src=elasticsearch.yml dest=/opt/elasticsearch/config/elasticsearch.yml backup=yes mode=0644
+
+- name: set file perms
+  file: name=/opt/elasticsearch/config/log4j2.properties state=file mode=0644
+
+- name: set file perms
+  file: name=/opt/elasticsearch/config/jvm.options state=file mode=0644
+
+- name: create path.scripts
+  file: name=/opt/elasticsearch/config/scripts state=directory mode=0755 owner={{ es_user }} group={{ es_user }}
+
+- name: create path.logs
+  file: name={{ es_path_logs }} state=directory mode=0755 owner={{ es_user }} group={{ es_user }}
+
+- name: create path.data
+  file: name={{ es_path_data }} state=directory mode=0755 owner={{ es_user }} group={{ es_user }}
+
+- name: create user
+  user: name="{{ es_user }}" createhome=no
+
+- name: set vm.max_map_count
+  sysctl: name=vm.max_map_count value=262144
+
+- name: put a systemctl unit file
+  template: src=elasticsearch.service dest=/etc/systemd/system/elasticsearch.service
+  when: "(ansible_distribution == 'Debian' and ansible_distribution_major_version == '8') or (ansible_distribution == 'Ubuntu' and (ansible_distribution_version|version_compare(14.04, '>'))) or (ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7')"
+
+- name: enable and start elasticsearch service
+  service: name="elasticsearch" enabled=yes state=started
+  when: "(ansible_distribution == 'Debian' and ansible_distribution_major_version == '8') or (ansible_distribution == 'Ubuntu' and (ansible_distribution_version|version_compare(14.04, '>'))) or (ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7')"
